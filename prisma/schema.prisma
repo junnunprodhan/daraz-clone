@@ -1,0 +1,136 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String  @db.ObjectId
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+enum Role {
+  USER
+  ADMIN
+  VENDOR
+}
+
+type Details {
+  division String
+  city     String
+  state    String
+  zip      String
+}
+
+model User {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  name          String?
+  username      String?   @unique
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  phone         String?   @unique
+  password      String?
+  accounts      Account[]
+  details       Details?
+  role          Role      @default(USER)
+  shop          Shop?
+  address       Address[]
+  rating        Rating[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Shop {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  name      String?
+  image     String?
+  adminId   String?
+  slug      String?   @unique
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String    @unique @db.ObjectId
+  products  Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+// User address
+
+model Address {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  fullName  String?
+  phone     String?
+  division  String?
+  city      String?
+  zip       String?
+  address   String?
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Order {
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  totalPrice Int
+  products   Product[]
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model Product {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  title         String?
+  brand         String?
+  images        String[]
+  thumbnail     String?
+  color         String?
+  discountPrice Int?
+  price         Int?
+  sizes         String?
+  stock         Int?
+  sku           String?  @unique
+  warranty      Int?
+  // shop relations
+  shopId        String   @unique @db.ObjectId
+  shop          Shop     @relation(fields: [shopId], references: [id])
+  // Order relations
+  order         Order?   @relation(fields: [orderId], references: [id])
+  orderId       String   @db.ObjectId
+  // Review relations
+  rating        Rating[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Rating {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  value     Int?
+  review    String?
+  images    String[]
+  userId    String   @unique @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id])
+  productId String   @db.ObjectId
+  product   Product  @relation(fields: [productId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
