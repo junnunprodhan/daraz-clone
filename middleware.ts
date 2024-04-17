@@ -4,8 +4,9 @@ export default withAuth(
   function middleware(req: NextRequestWithAuth) {
     // console.log(req.nextUrl); ?callbackUrl=%2Fdashboard
     // Callback permission granted then working in config routed
+
     const { token } = req.nextauth; // Auth token
-    const { pathname, origin } = req.nextUrl; // Requested pathname  and base URL
+    const { pathname, origin } = req .nextUrl; // Requested pathname  and base URL
     // Auth Route protected
     if (pathname === "/auth" && token) {
       if (token.role === "ADMIN") {
