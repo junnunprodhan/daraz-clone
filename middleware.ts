@@ -6,8 +6,9 @@ export default withAuth(
     // Callback permission granted then working in config routed
 
     const { token } = req.nextauth; // Auth token
-    const { pathname, origin } = req .nextUrl; // Requested pathname  and base URL
+    const { pathname, origin } = req.nextUrl; // Requested pathname  and base URL
     // Auth Route protected
+    
     if (pathname === "/auth" && token) {
       if (token.role === "ADMIN") {
         return NextResponse.redirect(origin + "/admin");
